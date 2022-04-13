@@ -6,8 +6,7 @@ class ItemsController < ApplicationController
   before_action :authenticate_user!, except: %i[index show]
 
   def index
-    # nice
-    @items = Item.all.includes(:user)
+    @items = Item.joins(:user)
 
     @items = @items.tagged_with(params[:tag]) if params[:tag].present?
     @items = @items.sellered_by(params[:seller]) if params[:seller].present?
