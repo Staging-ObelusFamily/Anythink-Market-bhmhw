@@ -2,6 +2,11 @@
 
 To start the app use Docker. It will start both frontend and backend, including all the relevant dependencies, and the db.
 
+docker-compose up is your friend
+also:
+docker exec -w /usr/src/backend -it anythink-backend rails db:migrate`
+`
+
 Please find more info about each part in the relevant Readme file ([frontend](frontend/readme.md) and [backend](backend/README.md)).
 
 ## Development
