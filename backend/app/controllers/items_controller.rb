@@ -6,7 +6,7 @@ class ItemsController < ApplicationController
   before_action :authenticate_user!, except: %i[index show]
 
   def index
-    @items = Item.joins(:user)
+    @items = Item.includes(:tags, :user)
 
     @items = @items.tagged_with(params[:tag]) if params[:tag].present?
     @items = @items.sellered_by(params[:seller]) if params[:seller].present?
@@ -15,6 +15,23 @@ class ItemsController < ApplicationController
     @items_count = @items.count
 
     @items = @items.order(created_at: :desc).offset(params[:offset] || 0).limit(params[:limit] || 20)
+
+    render json: @items.map { |item|
+        {
+            title: item.title,
+            slug: item.slug,
+            description: item.description,
+            image: item.image,
+            tagList: item.tags.map(&:name),
+            createdAt: item.created_at,
+            updatedAt: item.updated_at,
+            seller: {
+                username: item.user.username,
+                bio: item.user.bio,
+                image: item.user.image || 'https://static.productionready.io/images/smiley-cyrus.jpg',
+            },
+        }
+    }
   end
 
   def feed
