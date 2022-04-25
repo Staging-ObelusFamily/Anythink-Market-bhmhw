@@ -6,7 +6,7 @@ class ItemsController < ApplicationController
   before_action :authenticate_user!, except: %i[index show]
 
   def index
-    @items = Item.includes(:tags, :user)
+    @items = Item.includes(:tags)
 
     @items = @items.tagged_with(params[:tag]) if params[:tag].present?
     @items = @items.sellered_by(params[:seller]) if params[:seller].present?
@@ -16,8 +16,9 @@ class ItemsController < ApplicationController
 
     @items = @items.order(created_at: :desc).offset(params[:offset] || 0).limit(params[:limit] || 20)
 
-    render json: @items.map { |item|
-        {
+    render json: {
+      items: @items.map { |item|
+          {
             title: item.title,
             slug: item.slug,
             description: item.description,
@@ -26,12 +27,17 @@ class ItemsController < ApplicationController
             createdAt: item.created_at,
             updatedAt: item.updated_at,
             seller: {
-                username: item.user.username,
-                bio: item.user.bio,
-                image: item.user.image || 'https://static.productionready.io/images/smiley-cyrus.jpg',
+              username: item.user.username,
+              bio: item.user.bio,
+              image: item.user.image || 'https://static.productionready.io/images/smiley-cyrus.jpg',
+              following: signed_in? ? current_user.following?(user) : false,
             },
-        }
-    }
+            favorited: signed_in? ? current_user.favorited?(item) : false,
+            favorites_count: item.favorites_count || 0,
+          }
+        },
+      items_count: @items_count
+    } 
   end
 
   def feed
